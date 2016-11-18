@@ -18,6 +18,8 @@ import android.text.format.Time;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -205,6 +207,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             drawBackground(canvas, bounds);
             drawTimeText(canvas);
+            drawDate(canvas);
         }
 
         private void initBackground() {
@@ -250,6 +253,12 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 return String.valueOf(mDisplayTime.hour - 12);
         }
 
-
+        private void drawDate(Canvas canvas) {
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM d yyyy");
+            String strDate = sdf.format(calendar.getTime());
+            mTextColorPaint.setTextSize(20.0f);
+            canvas.drawText(strDate, mXOffset, mYOffset + 40.0f, mTextColorPaint);
+        }
     }
 }
