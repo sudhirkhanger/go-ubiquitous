@@ -42,7 +42,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
-    public static final String LOG_TAG = SunshineWatchFaceService.class.getSimpleName();
+    //Hardcoding tag to bypass 23 char long log tag restriction.
+    public static final String LOG_TAG = "SunshineWatchFaceServ";
 
     @Override
     public Engine onCreateEngine() {
@@ -63,7 +64,7 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
         private Time mDisplayTime;
 
-        private Paint mBackgroundColorPaint;
+        private Paint backgroundPaint;
         private Paint mTextColorPaint;
 
         private boolean mHasTimeZoneReceiverBeenRegistered = false;
@@ -114,6 +115,9 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         //Overridden methods
         @Override
         public void onCreate(SurfaceHolder holder) {
+            if (Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+                Log.d(LOG_TAG, "onCreate");
+            }
             super.onCreate(holder);
 
             setWatchFaceStyle(new WatchFaceStyle.Builder(SunshineWatchFaceService.this)
@@ -123,13 +127,19 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                     .build()
             );
 
+            Resources resources = SunshineWatchFaceService.this.getResources();
+            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
+
+            //Set background color
+            backgroundPaint = new Paint();
+            backgroundPaint.setColor(mBackgroundInteractiveColor);
+
             googleApiClient = new GoogleApiClient.Builder(SunshineWatchFaceService.this)
                     .addApi(Wearable.API)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
 
-            initBackground();
             initDisplayText();
 
             mDisplayTime = new Time();
@@ -294,7 +304,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             Resources resources = SunshineWatchFaceService.this.getResources();
             boolean isRound = insets.isRound();
 
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
             mXOffset = resources.getDimension(isRound
                     ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
         }
@@ -321,10 +330,10 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             if (inAmbientMode) {
 //                mTextColorPaint.setColor(mTextColor);
-                mBackgroundColorPaint.setColor(mBackgroundColorAmbient);
+                backgroundPaint.setColor(mBackgroundColorAmbient);
             } else {
 //                mTextColorPaint.setColor(mTextColor);
-                mBackgroundColorPaint.setColor(mBackgroundInteractiveColor);
+                backgroundPaint.setColor(mBackgroundInteractiveColor);
             }
 
             if (mIsLowBitAmbient) {
@@ -362,7 +371,8 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
 
             mDisplayTime.setToNow();
 
-            drawBackground(canvas, bounds);
+            canvas.drawRect(0, 0, bounds.width(), bounds.height(), backgroundPaint);
+
             drawTimeText(canvas);
             drawDate(canvas);
             if (weatherIcon != -1)
@@ -371,11 +381,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
                 drawHighTemp(canvas);
             if (!TextUtils.isEmpty(lowTemp))
                 drawLowTemp(canvas);
-        }
-
-        private void initBackground() {
-            mBackgroundColorPaint = new Paint();
-            mBackgroundColorPaint.setColor(mBackgroundInteractiveColor);
         }
 
         private void initDisplayText() {
@@ -391,10 +396,6 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
             if (isVisible() && !isInAmbientMode()) {
                 mTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME_ID);
             }
-        }
-
-        private void drawBackground(Canvas canvas, Rect bounds) {
-            canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundColorPaint);
         }
 
         private void drawTimeText(Canvas canvas) {
