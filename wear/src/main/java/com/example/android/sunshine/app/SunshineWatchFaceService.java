@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -290,9 +291,12 @@ public class SunshineWatchFaceService extends CanvasWatchFaceService {
         public void onApplyWindowInsets(WindowInsets insets) {
             super.onApplyWindowInsets(insets);
 
-            mYOffset = getResources().getDimension(R.dimen.digital_y_offset);
-            mXOffset = insets.isRound() ? getResources().getDimension(R.dimen.digital_x_offset_round) :
-                    getResources().getDimension(R.dimen.digital_x_offset);
+            Resources resources = SunshineWatchFaceService.this.getResources();
+            boolean isRound = insets.isRound();
+
+            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
+            mXOffset = resources.getDimension(isRound
+                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
         }
 
         @Override
